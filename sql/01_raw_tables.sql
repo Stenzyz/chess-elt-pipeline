@@ -1,4 +1,4 @@
-create table raw.games_raw (
+CREATE TABLE IF NOT EXISTS raw.games_raw (
 	id            BIGSERIAL PRIMARY key,
 	username      VARCHAR(25) not NULL,
 	archive_month DATE NOT NULL,
