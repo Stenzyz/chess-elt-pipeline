@@ -2,6 +2,7 @@ import os
 
 import httpx
 from dotenv import load_dotenv
+from tenacity import retry, retry_if_exception, stop_after_attempt, wait_exponential
 
 load_dotenv()
 
@@ -20,8 +21,22 @@ class ApiClient:
             headers={"User-Agent": self.user_agent}, timeout=self.timeout
         )
 
+    @staticmethod
+    def is_api_error(exc):
+        if isinstance(exc, httpx.HTTPStatusError):
+            return (
+                exc.response.status_code == 429
+                or 500 <= exc.response.status_code <= 599
+            )
+        return False
+
     """Общий метод запроса, надстройка над публичными"""
 
+    @retry(
+        stop=stop_after_attempt(5),
+        wait=wait_exponential(multiplier=2, min=1, max=8),
+        retry=retry_if_exception(is_api_error),
+    )
     def _get(self, path: str) -> dict:
         url = f"{BASE_URL}{path}"
         responce = self.client.get(url)
