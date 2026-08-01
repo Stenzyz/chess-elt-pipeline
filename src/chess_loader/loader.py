@@ -6,6 +6,7 @@ from datetime import datetime, timezone
 
 import httpx
 import psycopg
+import tenacity
 
 logger = logging.getLogger(__name__)
 
@@ -27,6 +28,9 @@ def load_player_month(
     except json.JSONDecodeError:
         # сервер ответил 200, но тело не распарсилось как json
         logger.error("Ответ сервера пришел не в формате JSON")
+        return
+    except tenacity.RetryError:
+        logger.error("Все ретраи получили ошибки")
         return
 
     if not data["games"]:
