@@ -11,4 +11,4 @@ quote-style = "double"
 select = ["E", "F", "I"]
 
 [tool.pytest.ini_options]
-pythonpath = ["src", "src/chess_loader"]
+pythonpath = ["src", "src/chess_loader", "src/loader.py"]
