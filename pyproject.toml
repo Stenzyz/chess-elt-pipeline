@@ -9,3 +9,6 @@ quote-style = "double"
 
 [tool.ruff.lint]
 select = ["E", "F", "I"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src", "src/chess_loader"]
