@@ -18,6 +18,7 @@ eggs/
 logs/
 lib/
 lib64/
+config/
 parts/
 sdist/
 var/
