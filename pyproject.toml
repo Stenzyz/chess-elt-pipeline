@@ -1,7 +1,7 @@
-target-version = "py312"
 
 [tool.ruff]
 line-length = 88
+target-version = "py312"
 
 [tool.ruff.format]
 # ковычки
@@ -11,4 +11,4 @@ quote-style = "double"
 select = ["E", "F", "I"]
 
 [tool.pytest.ini_options]
-pythonpath = ["src", "src/chess_loader", "src/loader.py"]
+pythonpath = ["src", "src/chess_loader"]

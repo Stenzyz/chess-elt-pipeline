@@ -15,7 +15,7 @@ class ApiClient:
     def __init__(self) -> None:
         self.user_agent = os.environ.get("CHESS_API_USER_AGENT")
         if not self.user_agent:
-            raise ("CHESS_API_USER_AGENT is not set")
+            raise ValueError("CHESS_API_USER_AGENT is not set")
         self.timeout = 10.0
         self.client = httpx.Client(
             headers={"User-Agent": self.user_agent}, timeout=self.timeout
