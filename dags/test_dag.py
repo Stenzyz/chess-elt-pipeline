@@ -11,9 +11,9 @@ def print_date():
 
 with DAG(
     dag_id="test_dag",
-    schedule=None,
-    start_date=datetime(2026, 1, 1),
-    catchup=False,
+    schedule="@monthly",
+    start_date=datetime(2025, 1, 1),
+    catchup=True,
 ) as dag:
     task_print_date = PythonOperator(
         task_id="print_date",
