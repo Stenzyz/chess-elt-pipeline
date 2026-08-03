@@ -9,10 +9,10 @@ from shared_tasks import (
 )
 
 with DAG(
-    dag_id="monthly_games_load",
-    schedule="@monthly",
+    dag_id="daily_games_load",
+    schedule="0 12 * * *",
     start_date=datetime(2024, 8, 1),
-    catchup=True,
+    catchup=False,
     max_active_runs=1,
 ) as dag:
     task_get_players = PythonOperator(
@@ -21,10 +21,10 @@ with DAG(
     task_build_kwargs = PythonOperator(
         task_id="build_kwargs_list",
         python_callable=build_kwargs_list,
-        op_kwargs={"schedule": "month"},
+        op_kwargs={"schedule": "day"},
     )
     task_load_games = PythonOperator.partial(
-        task_id="load_games_for_month",
+        task_id="load_games_for_day",
         python_callable=load_games_for_player,
         pool="chess_pool",
     ).expand(op_kwargs=task_build_kwargs.output)
