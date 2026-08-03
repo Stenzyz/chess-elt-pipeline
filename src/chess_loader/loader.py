@@ -20,7 +20,7 @@ def load_player_month(
             data = client.get_games(username, year, month)
         except httpx.HTTPStatusError as exc:
             if exc.response.status_code == 404:
-                logger.debug(f"У {username} нет партий за период {year}-{month:02d}")
+                logger.debug(f"Запрос для {username} вернул 404")
                 return
             else:
                 raise
@@ -35,7 +35,7 @@ def load_player_month(
         if not data["games"]:
             # пустой месяц - не пишем в базу
             logger.info(
-                f"У {username} за период {year}-{month:02d}, запрос вернул пустой ответ"
+                f"У {username} за период {year}-{month:02d} нету игр, пустой ответ"
             )
             return
 
