@@ -28,6 +28,8 @@ class ApiClient:
                 exc.response.status_code == 429
                 or 500 <= exc.response.status_code <= 599
             )
+        elif isinstance(exc, (httpx.TimeoutException, httpx.TransportError)):
+            return True
         return False
 
     """Общий метод запроса, надстройка над публичными"""

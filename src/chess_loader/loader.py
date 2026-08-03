@@ -70,7 +70,7 @@ def load_player_month(
             raise
 
     finally:
-        # троттлинг, досыпаем только остаток до 1 секунды между запросами
+        # троттлинг, досыпаем только остаток до 3 секунды между запросами
         elapsed = time.time() - start
-        if elapsed < 1:
-            time.sleep(1 - elapsed)
+        if elapsed < 3:
+            time.sleep(3 - elapsed)

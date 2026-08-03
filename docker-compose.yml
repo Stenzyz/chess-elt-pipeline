@@ -220,6 +220,8 @@ services:
         echo "Files in shared volumes:"
         echo
         ls -la /opt/airflow/{logs,dags,plugins,config}
+        echo
+        /entrypoint airflow pools set chess_pool 5 'Chess-API pool'
 
     # yamllint enable rule:line-length
     environment:
