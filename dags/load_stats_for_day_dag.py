@@ -4,12 +4,14 @@ from airflow import DAG
 from airflow.operators.python import PythonOperator
 from shared_tasks import (
     build_stats_kwargs_list,
+    default_args,
     get_titled_players,
     load_stats_for_player,
 )
 
 with DAG(
     dag_id="daily_stats_load",
+    default_args=default_args,
     schedule="@daily",
     start_date=datetime(2024, 8, 1),
     catchup=False,

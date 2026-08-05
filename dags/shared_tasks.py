@@ -1,10 +1,15 @@
 from datetime import datetime, timezone
 
 from airflow.providers.postgres.hooks.postgres import PostgresHook
+from callbacks import notify_telegram_failure
 from client import ApiClient
 from loader import load_player_month, load_player_stats
 
 chunk_size = 100
+
+default_args = {
+    "on_failure_callback": notify_telegram_failure,
+}
 
 
 def build_kwargs_list(schedule, **kwargs):
