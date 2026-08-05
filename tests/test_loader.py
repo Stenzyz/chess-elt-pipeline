@@ -1,6 +1,7 @@
+from datetime import datetime
 from unittest.mock import MagicMock
 
-from loader import load_player_month
+from loader import load_player_month, load_player_stats
 
 
 def test_load_player_month_idempotent(monkeypatch):
@@ -24,3 +25,32 @@ def test_load_player_month_idempotent(monkeypatch):
 
     assert first_params[0] == second_params[0]  # username совпадает
     assert first_params[1] == second_params[1]  # archive_month совпадает
+
+
+def test_load_player_stats_idempotent(monkeypatch):
+    monkeypatch.setenv("CHESS_API_USER_AGENT", "test-agent test@test.com")
+
+    fake_client = MagicMock()
+    fake_client.get_stats.return_value = {
+        "chess_rapid": {"rating": 2912, "date": 17813470}
+    }
+
+    fake_db_conn = MagicMock()
+
+    load_player_stats(
+        fake_client, fake_db_conn, "magnuscarlsen", datetime(2026, 8, 5).date(), "test1"
+    )
+    load_player_stats(
+        fake_client, fake_db_conn, "magnuscarlsen", datetime(2026, 8, 5).date(), "test2"
+    )
+
+    mock_cursor = fake_db_conn.cursor.return_value.__enter__.return_value
+
+    first_call = mock_cursor.execute.call_args_list[0]
+    second_call = mock_cursor.execute.call_args_list[1]
+
+    first_params = first_call.args[1]
+    second_params = second_call.args[1]
+
+    assert first_params[0] == second_params[0]  # username совпадает
+    assert first_params[1] == second_params[1]  # snapshot_date совпадает

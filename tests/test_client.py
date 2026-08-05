@@ -47,6 +47,28 @@ def test_get_archives_success(monkeypatch):
 
 
 @respx.mock
+def test_get_stats_success(monkeypatch):
+    monkeypatch.setenv("CHESS_API_USER_AGENT", "test-agent test@test.com")
+
+    Route = respx.get("https://api.chess.com/pub/player/magnuscarlsen/stats").mock(
+        return_value=httpx.Response(
+            200,
+            json={
+                "chess_rapid": {"last": {"rating": 2912, "date": 1781347004, "rd": 48}}
+            },
+        )
+    )
+
+    client = ApiClient()
+    data = client.get_stats("magnuscarlsen")
+
+    assert Route.called
+    assert data == {
+        "chess_rapid": {"last": {"rating": 2912, "date": 1781347004, "rd": 48}}
+    }
+
+
+@respx.mock
 def test_get_games_success(monkeypatch):
     monkeypatch.setenv("CHESS_API_USER_AGENT", "test-agent test@test.com")
 
