@@ -57,3 +57,6 @@ class ApiClient:
         else:
             formatted_month = f"{month}"
         return self._get(f"/player/{username}/games/{year}/{formatted_month}")
+
+    def get_stats(self, username: str) -> dict:
+        return self._get(f"/player/{username}/stats")
