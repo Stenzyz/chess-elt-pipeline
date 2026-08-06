@@ -29,7 +29,12 @@ SELECT DISTINCT ON (game ->> 'uuid')
     (game -> 'black' ->> 'rating')::integer,
     (game -> 'accuracies' ->> 'white')::real,
     (game -> 'accuracies' ->> 'black')::real,
-    game ->> 'eco',
+    trim(
+        regexp_replace(
+            replace(split_part(split_part((game ->> 'eco'), '/openings/', 2), '...', 1), '-', ' '),
+        '\s*\d.*$', ''
+        )
+    ),
     to_timestamp((game ->> 'end_time')::bigint)
 FROM raw.games_raw,
      jsonb_array_elements(payload -> 'games') AS game
