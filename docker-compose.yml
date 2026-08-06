@@ -234,6 +234,7 @@ services:
     user: "0:0"
 
   dbt:
+    profiles: ["manual"]
     image: ghcr.io/dbt-labs/dbt-postgres:1.9.latest
     working_dir: /usr/app/dbt/chess_dbt
     volumes:

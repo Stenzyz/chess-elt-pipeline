@@ -1,0 +1,16 @@
+version: 2
+
+sources:
+  - name: raw
+    schema: raw
+    tables:
+      - name: games_raw
+        loaded_at_field: loaded_at
+        freshness:
+          warn_after: {count: 25, period: hour}
+          error_after: {count: 48, period: hour}
+      - name: stats_snapshot_raw
+        loaded_at_field: loaded_at
+        freshness:
+          warn_after: {count: 25, period: hour}
+          error_after: {count: 48, period: hour}
