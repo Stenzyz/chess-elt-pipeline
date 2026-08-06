@@ -233,6 +233,19 @@ services:
       _PIP_ADDITIONAL_REQUIREMENTS: ''
     user: "0:0"
 
+  dbt:
+    image: ghcr.io/dbt-labs/dbt-postgres:1.9.latest
+    working_dir: /usr/app/dbt/chess_dbt
+    volumes:
+      - ./dbt:/usr/app/dbt
+    env_file:
+      - .env
+    environment:
+      DBT_PROFILES_DIR: /usr/app/dbt/chess_dbt
+    depends_on:
+      postgres:
+        condition: service_healthy
+
 volumes:
   postgres_data:
   postgres-db-volume:
