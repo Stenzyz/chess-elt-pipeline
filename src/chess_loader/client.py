@@ -60,3 +60,6 @@ class ApiClient:
 
     def get_stats(self, username: str) -> dict:
         return self._get(f"/player/{username}/stats")
+
+    def get_profile(self, username: str) -> dict:
+        return self._get(f"/player/{username}")

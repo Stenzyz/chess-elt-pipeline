@@ -6,13 +6,13 @@ from shared_tasks import (
     build_username_kwargs_list,
     default_args,
     get_titled_players,
-    load_stats_for_player,
+    load_profile_for_player,
 )
 
 with DAG(
-    dag_id="daily_stats_load",
+    dag_id="weekly_profile_load",
     default_args=default_args,
-    schedule="@daily",
+    schedule="@weekly",
     start_date=datetime(2024, 8, 1),
     catchup=False,
     max_active_runs=1,
@@ -24,9 +24,9 @@ with DAG(
         task_id="build_username_kwargs_list",
         python_callable=build_username_kwargs_list,
     )
-    task_load_stats = PythonOperator.partial(
-        task_id="load_stats_for_day",
-        python_callable=load_stats_for_player,
+    task_load_profiles = PythonOperator.partial(
+        task_id="load_profiles_for_week",
+        python_callable=load_profile_for_player,
         pool="chess_pool",
     ).expand(op_kwargs=task_build_kwargs.output)
-    task_get_players >> task_build_kwargs >> task_load_stats
+    task_get_players >> task_build_kwargs >> task_load_profiles

@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 from airflow.providers.postgres.hooks.postgres import PostgresHook
 from callbacks import notify_telegram_failure
 from client import ApiClient
-from loader import load_player_month, load_player_stats
+from loader import load_player_month, load_player_profile, load_player_stats
 
 chunk_size = 100
 
@@ -18,7 +18,7 @@ def build_kwargs_list(schedule, **kwargs):
     return [{"usernames": chunk, "schedule": schedule} for chunk in data_chunked]
 
 
-def build_stats_kwargs_list(**kwargs):
+def build_username_kwargs_list(**kwargs):
     data = kwargs["ti"].xcom_pull(task_ids="get_titled_players")
     data_chunked = [data[i : i + chunk_size] for i in range(0, len(data), chunk_size)]
     return [{"usernames": chunk} for chunk in data_chunked]
@@ -57,3 +57,12 @@ def load_stats_for_player(usernames, **kwargs):
     with hook.get_conn() as conn:
         for username in usernames:
             load_player_stats(client, conn, username, snapshot_date, batch_id)
+
+
+def load_profile_for_player(usernames, **kwargs):
+    hook = PostgresHook(postgres_conn_id="postgres_dwh")
+    batch_id = kwargs["run_id"]
+    client = ApiClient()
+    with hook.get_conn() as conn:
+        for username in usernames:
+            load_player_profile(client, conn, username, batch_id)

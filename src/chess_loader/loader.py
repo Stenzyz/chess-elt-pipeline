@@ -10,26 +10,51 @@ import tenacity
 logger = logging.getLogger(__name__)
 
 
+def _fetch_with_retry_handling(client_call, username: str):
+    """Общая обработка сетевых ошибок вокруг вызова клиента. Возвращает data или None"""
+    try:
+        return client_call(username)
+    except httpx.HTTPStatusError as exc:
+        if exc.response.status_code == 404:
+            logger.debug(f"Запрос для {username} вернул 404")
+            return None
+        raise
+    except json.JSONDecodeError:
+        logger.error("Ответ сервера пришел не в формате JSON")
+        return None
+    except tenacity.RetryError:
+        logger.error("Все ретраи получили ошибки")
+        return None
+
+
+def _upsert(db_connection, query: str, params: tuple) -> None:
+    """Общая запись с rollback при ошибке."""
+    try:
+        with db_connection.cursor() as cursor:
+            cursor.execute(query, params)
+        db_connection.commit()
+    except psycopg.Error:
+        db_connection.rollback()
+        raise
+
+
+def _throttle(start: float, min_seconds: float = 3) -> None:
+    """Досыпает только остаток до min_seconds между запросами."""
+    elapsed = time.time() - start
+    if elapsed < min_seconds:
+        time.sleep(min_seconds - elapsed)
+
+
 def load_player_month(
     client, db_connection, username: str, year: int, month: int, batch_id: str
 ) -> None:
     """Загружает партии одного игрока за один месяц в raw.games_raw (upsert)."""
-    start = time.time()  # для троттлинга, засекаем время до запроса
+    start = time.time()
     try:
-        try:
-            data = client.get_games(username, year, month)
-        except httpx.HTTPStatusError as exc:
-            if exc.response.status_code == 404:
-                logger.debug(f"Запрос для {username} вернул 404")
-                return
-            else:
-                raise
-        except json.JSONDecodeError:
-            # сервер ответил 200, но тело не распарсилось как json
-            logger.error("Ответ сервера пришел не в формате JSON")
-            return
-        except tenacity.RetryError:
-            logger.error("Все ретраи получили ошибки")
+        data = _fetch_with_retry_handling(
+            lambda u: client.get_games(u, year, month), username
+        )
+        if data is None:
             return
 
         if not data["games"]:
@@ -39,7 +64,6 @@ def load_player_month(
             )
             return
 
-        # upsert, чтобы повторный запуск за тот же период не плодил дубли
         query = """
             INSERT INTO raw.games_raw(
             username, archive_month, payload, loaded_at, batch_id)
@@ -50,51 +74,31 @@ def load_player_month(
                 loaded_at = EXCLUDED.loaded_at,
                 batch_id = EXCLUDED.batch_id
             """
-
-        try:
-            with db_connection.cursor() as cursor:
-                cursor.execute(
-                    query,
-                    (
-                        username,
-                        f"{year}-{month}",
-                        json.dumps(data),
-                        datetime.now(timezone.utc),
-                        batch_id,
-                    ),
-                )
-            db_connection.commit()
-            logger.info(f"Загружено: {username}, {year}-{month:02d}")
-        except psycopg.Error:
-            db_connection.rollback()
-            raise
+        _upsert(
+            db_connection,
+            query,
+            (
+                username,
+                f"{year}-{month}",
+                json.dumps(data),
+                datetime.now(timezone.utc),
+                batch_id,
+            ),
+        )
+        logger.info(f"Загружено: {username}, {year}-{month:02d}")
 
     finally:
-        # троттлинг, досыпаем только остаток до 3 секунды между запросами
-        elapsed = time.time() - start
-        if elapsed < 3:
-            time.sleep(3 - elapsed)
+        _throttle(start)
 
 
 def load_player_stats(
     client, db_connection, username: str, snapshot_date, batch_id: str
 ) -> None:
+    """Загружает снапшот рейтингов игрока в raw.stats_snapshot_raw (upsert)."""
     start = time.time()
     try:
-        try:
-            data = client.get_stats(username)
-        except httpx.HTTPStatusError as exc:
-            if exc.response.status_code == 404:
-                logger.debug(f"Запрос для {username} вернул 404")
-                return
-            else:
-                raise
-        except json.JSONDecodeError:
-            # сервер ответил 200, но тело не распарсилось как json
-            logger.error("Ответ сервера пришел не в формате JSON")
-            return
-        except tenacity.RetryError:
-            logger.error("Все ретраи получили ошибки")
+        data = _fetch_with_retry_handling(client.get_stats, username)
+        if data is None:
             return
 
         if data.keys().isdisjoint(["chess_rapid", "chess_bullet", "chess_blitz"]):
@@ -112,26 +116,47 @@ def load_player_stats(
                 loaded_at = EXCLUDED.loaded_at,
                 batch_id = EXCLUDED.batch_id
             """
-
-        try:
-            with db_connection.cursor() as cursor:
-                cursor.execute(
-                    query,
-                    (
-                        username,
-                        snapshot_date,
-                        json.dumps(data),
-                        datetime.now(timezone.utc),
-                        batch_id,
-                    ),
-                )
-            db_connection.commit()
-            logger.info(f"Загруженна статистика {username}, {snapshot_date}")
-        except psycopg.Error:
-            db_connection.rollback()
-            raise
+        _upsert(
+            db_connection,
+            query,
+            (
+                username,
+                snapshot_date,
+                json.dumps(data),
+                datetime.now(timezone.utc),
+                batch_id,
+            ),
+        )
+        logger.info(f"Загружена статистика {username}, {snapshot_date}")
 
     finally:
-        elapsed = time.time() - start
-        if elapsed < 3:
-            time.sleep(3 - elapsed)
+        _throttle(start)
+
+
+def load_player_profile(client, db_connection, username: str, batch_id: str) -> None:
+    """Загружает профиль игрока в raw.player_profiles_raw (upsert)."""
+    start = time.time()
+    try:
+        data = _fetch_with_retry_handling(client.get_profile, username)
+        if data is None:
+            return
+
+        query = """
+            INSERT INTO raw.player_profiles_raw(
+            username, payload, loaded_at, batch_id)
+            VALUES (%s, %s::jsonb, %s, %s)
+            ON CONFLICT (username)
+            DO UPDATE SET
+                payload = EXCLUDED.payload,
+                loaded_at = EXCLUDED.loaded_at,
+                batch_id = EXCLUDED.batch_id
+            """
+        _upsert(
+            db_connection,
+            query,
+            (username, json.dumps(data), datetime.now(timezone.utc), batch_id),
+        )
+        logger.info(f"Загружен профиль {username}")
+
+    finally:
+        _throttle(start)
