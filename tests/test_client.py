@@ -88,6 +88,28 @@ def test_get_games_success(monkeypatch):
 
 
 @respx.mock
+def test_get_profile_success(monkeypatch):
+    monkeypatch.setenv("CHESS_API_USER_AGENT", "test-agent test@test.com")
+
+    Route = respx.get("https://api.chess.com/pub/player/magnuscarlsen").mock(
+        return_value=httpx.Response(
+            200,
+            json={"name": "Magnus Carlsen", "username": "magnuscarlsen", "title": "GM"},
+        )
+    )
+
+    client = ApiClient()
+    data = client.get_profile("magnuscarlsen")
+
+    assert Route.called
+    assert data == {
+        "name": "Magnus Carlsen",
+        "username": "magnuscarlsen",
+        "title": "GM",
+    }
+
+
+@respx.mock
 def test_404_no_retry(monkeypatch):
     monkeypatch.setenv("CHESS_API_USER_AGENT", "test-agent test@test.com")
 
