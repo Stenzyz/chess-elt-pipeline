@@ -1,4 +1,4 @@
-{% snapshot dim_player %}
+{% snapshot snap_player_profiles %}
 
 {{
     config(

@@ -1,0 +1,43 @@
+version: 2
+
+models:
+  - name: fct_games
+    columns:
+      - name: uuid
+        data_tests:
+          - unique
+          - not_null
+      - name: outcome
+        data_tests:
+          - accepted_values:
+              values: ['white', 'black', 'draw']
+          - not_null
+      - name: white_username
+        data_tests:
+          - relationships:
+              to: ref('dim_player')
+              field: username
+      - name: black_username
+        data_tests:
+          - relationships:
+              to: ref('dim_player')
+              field: username
+      - name: time_class
+        data_tests:
+          - relationships:
+              to: ref('dim_time_control')
+              field: time_class
+      - name: eco
+        data_tests:
+          - relationships:
+              to: ref('dim_opening')
+              field: eco
+      - name: termination
+        data_tests:
+          - accepted_values:
+              values: [
+                        '50move', 'abandoned', 'agreed',
+                        'checkmated', 'insufficient', 'repetition',
+                        'resigned', 'stalemate', 'timeout',
+                        'timevsinsufficient'
+                      ]
