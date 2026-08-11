@@ -1,11 +1,8 @@
 # Звезда (dds-слой)
 
-## Зерно таблиц фактов
+## Зерно таблицы фактов
 
 - `fct_games` - одна строка = одна партия
-- `fct_player_rating_daily` - одна строка = игрок + дата снимка +класс контроля
-
-Две таблицы фактов с разной гранулярностью.
 
 ## Схема
 
@@ -16,9 +13,6 @@ erDiagram
     FCT_GAMES }o--|| DIM_OPENING : "eco"
     FCT_GAMES }o--|| DIM_TIME_CONTROL : "time_class"
     FCT_GAMES }o--|| DIM_DATE : "end_time::date"
-    FCT_PLAYER_RATING_DAILY }o--|| DIM_PLAYER : "username"
-    FCT_PLAYER_RATING_DAILY }o--|| DIM_DATE : "snapshot_date"
-    FCT_PLAYER_RATING_DAILY }o--|| DIM_TIME_CONTROL : "time_class"
 
     FCT_GAMES {
         varchar uuid PK
@@ -36,6 +30,7 @@ erDiagram
         text eco FK
         varchar time_class FK
         timestamptz end_time
+        date end_date
     }
 
     DIM_TIME_CONTROL {
@@ -59,17 +54,6 @@ erDiagram
         text opening_family
     }
 
-    FCT_PLAYER_RATING_DAILY {
-        varchar username FK
-        date snapshot_date
-        varchar time_class FK
-        int rating
-        int win
-        int loss
-        int draw
-        timestamptz last_game_date
-    }
-
     DIM_DATE {
         date date_day PK
         int year
@@ -88,6 +72,8 @@ erDiagram
 
 **`dim_player` через SCD2.** Титул, страна и статус меняются редко, поэтому историчность через `dbt_valid_from`/`dbt_valid_to`. Джойн с фактом идёт с учётом периода действия версии, а не просто по `username`.
 
-**Рейтинг - снапшотом, не SCD2.** Рейтинг меняется после каждой партии, вести его через SCD2 породило бы миллионы версий. Поэтому отдельная таблица фактов с ежедневным срезом.
+**Рейтинг - снапшотом, без отдельного fct-слоя.** Рассматривал `fct_player_rating_daily` как вторую таблицу фактов с другим зерном (игрок + дата + класс контроля), но staging-модель (`stg_player_stats`) уже даёт это зерно напрямую, без тяжёлых вычислений поверх raw. Отдельная dds-модель была бы буквальной копией staging без архитектурной пользы (не нужна инкрементальность, не требуется стабилизировать интерфейс от сложной трансформации) - решил не плодить прослойку ради методологии и оставить `stg_player_stats` как источник для будущих витрин напрямую.
 
-**`dim_time_control` по `time_class`.** Ключ — класс контроля (rapid/blitz/bullet), а не конкретная комбинация секунд, потому что витрины оперируют классами. `base_time`/`increment_time` остаются как атрибуты измерения.
+**`dim_time_control` по `time_class`.** Ключ - класс контроля (rapid/blitz/bullet), а не конкретная комбинация секунд, потому что витрины оперируют классами. `base_time`/`increment_time` остаются как атрибуты измерения.
+
+**`fct_games` инкрементальна.** В отличие от рейтингов, партии - тяжёлая трансформация (jsonb-разворачивание по 1.9+ млн строк), полный пересчёт при каждом запуске был бы дорогим. `materialized='incremental'`, `unique_key='uuid'`, фильтр по `end_time` новее максимума в уже существующей таблице.
