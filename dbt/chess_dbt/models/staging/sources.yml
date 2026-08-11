@@ -14,3 +14,8 @@ sources:
         freshness:
           warn_after: {count: 25, period: hour}
           error_after: {count: 48, period: hour}
+      - name: player_profiles_raw
+        loaded_at_field: loaded_at
+        freshness:
+          warn_after: {count: 8, period: day}
+          error_after: {count: 14, period: day}
