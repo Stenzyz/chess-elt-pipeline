@@ -243,6 +243,8 @@ services:
       - .env
     environment:
       DBT_PROFILES_DIR: /usr/app/dbt/chess_dbt
+    ports:
+      - "8081:8080"
     depends_on:
       postgres:
         condition: service_healthy
