@@ -2,6 +2,8 @@ from datetime import datetime
 
 from airflow import DAG
 from airflow.operators.python import PythonOperator
+from airflow.providers.standard.operators.empty import EmptyOperator
+from assets import GAMES_LOADED
 from shared_tasks import (
     build_kwargs_list,
     default_args,
@@ -30,4 +32,5 @@ with DAG(
         python_callable=load_games_for_player,
         pool="chess_pool",
     ).expand(op_kwargs=task_build_kwargs.output)
-    task_get_players >> task_build_kwargs >> task_load_games
+    task_games_loaded = EmptyOperator(task_id="games_loaded", outlets=[GAMES_LOADED])
+    task_get_players >> task_build_kwargs >> task_load_games >> task_games_loaded
