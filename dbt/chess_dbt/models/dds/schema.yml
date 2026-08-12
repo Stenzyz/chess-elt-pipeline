@@ -77,3 +77,28 @@ models:
         data_tests:
           - unique
           - not_null
+
+  - name: fct_player_rating_daily
+    description: "Ежедневный снапшот рейтинга игрока по каждому контролю времени. Одна строка = игрок + дата + time_class."
+    columns:
+      - name: username
+        description: "Логин игрока"
+        data_tests:
+          - not_null
+          - relationships:
+              to: ref('dim_player')
+              field: username
+      - name: time_class
+        description: "Контроль времени (rapid/blitz/bullet)"
+        data_tests:
+          - not_null
+          - accepted_values:
+              values: ['rapid', 'blitz', 'bullet']
+      - name: snapshot_date
+        description: "Дата снимка рейтинга"
+        data_tests:
+          - not_null
+      - name: rating
+        description: "Рейтинг на дату снимка"
+        data_tests:
+          - not_null
