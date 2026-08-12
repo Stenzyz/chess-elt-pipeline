@@ -2,37 +2,45 @@ version: 2
 
 models:
   - name: fct_games
+    description: "Таблица фактов, одна строка = одна партия. Инкрементальная, пополняется по end_time."
     columns:
       - name: uuid
+        description: "Идентификатор партии"
         data_tests:
           - unique
           - not_null
       - name: outcome
+        description: "Итог партии"
         data_tests:
           - accepted_values:
               values: ['white', 'black', 'draw']
           - not_null
       - name: white_username
+        description: "Игрок белыми, денормализовано (не FK)"
         data_tests:
           - relationships:
               to: ref('dim_player')
               field: username
       - name: black_username
+        description: "Игрок чёрными, денормализовано (не FK)"
         data_tests:
           - relationships:
               to: ref('dim_player')
               field: username
       - name: time_class
+        description: "Контроль времени партии"
         data_tests:
           - relationships:
               to: ref('dim_time_control')
               field: time_class
       - name: eco
+        description: "Дебют партии"
         data_tests:
           - relationships:
               to: ref('dim_opening')
               field: eco
       - name: termination
+        description: "Причина завершения партии"
         data_tests:
           - accepted_values:
               values: [
@@ -41,3 +49,31 @@ models:
                         'resigned', 'stalemate', 'timeout',
                         'timevsinsufficient'
                       ]
+
+  - name: dim_time_control
+    description: "Справочник контролей времени: диапазоны base_time по каждому time_class."
+    columns:
+      - name: time_class
+        description: "Класс контроля времени"
+        data_tests:
+          - unique
+
+  - name: dim_opening
+    description: "Справочник дебютов."
+    columns:
+      - name: eco
+        description: "Полное название дебюта с вариацией, из ECOUrl"
+      - name: opening_family
+        description: "Семья дебюта без вариации"
+
+  - name: dim_date
+    description: "Календарь дат."
+
+  - name: dim_player
+    description: "Текущий срез атрибутов игрока. История изменений хранится в snapshot snap_player_profiles."
+    columns:
+      - name: username
+        description: "Логин игрока"
+        data_tests:
+          - unique
+          - not_null

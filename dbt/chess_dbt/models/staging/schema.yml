@@ -1,0 +1,11 @@
+version: 2
+
+models:
+  - name: stg_games
+    description: "Партии из raw.games_raw, развёрнутые из jsonb в строки. Дедуп по uuid через DISTINCT ON, только rated и не daily."
+
+  - name: stg_player_stats
+    description: "Снапшоты рейтингов из raw.stats_snapshot_raw. UNION ALL по трём time_class (rapid/blitz/bullet)."
+
+  - name: stg_player_profiles
+    description: "Профили игроков из raw.player_profiles_raw, без изменений типов кроме распаковки jsonb."

@@ -1,0 +1,12 @@
+version: 2
+
+snapshots:
+  - name: snap_player_profiles
+    description: "SCD2-снапшот профилей игроков (title/location/status). Стратегия check, история через dbt_valid_from/dbt_valid_to."
+    columns:
+      - name: username
+        data_tests:
+          - not_null
+      - name: dbt_valid_from
+        data_tests:
+          - not_null

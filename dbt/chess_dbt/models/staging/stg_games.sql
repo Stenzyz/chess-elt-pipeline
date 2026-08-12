@@ -6,8 +6,8 @@ SELECT DISTINCT ON (game ->> 'uuid')
     game ->> 'time_class' AS time_class,
     split_part((game ->> 'time_control'),'+', 1)::integer AS base_time,
     NULLIF(split_part((game ->> 'time_control'), '+', 2), '')::REAL AS increment_time,
-    game -> 'white' ->> 'username' AS white_username,
-    game -> 'black' ->> 'username' AS black_username,
+    LOWER(game -> 'white' ->> 'username') AS white_username,
+    LOWER(game -> 'black' ->> 'username') AS black_username,
     game -> 'white' ->> 'result' AS white_result,
     game -> 'black' ->> 'result' AS black_result,
     CASE
