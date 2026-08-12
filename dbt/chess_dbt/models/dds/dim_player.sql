@@ -4,6 +4,8 @@ WITH all_players AS (
     SELECT white_username AS username FROM {{ ref('fct_games') }}
     UNION
     SELECT black_username FROM {{ ref('fct_games') }}
+    UNION
+    SELECT username FROM {{ ref('fct_player_rating_daily') }}
 )
 
 SELECT
