@@ -36,3 +36,5 @@ models:
       +schema: stage
     dds:
       +schema: dds
+    marts:
+      +schema: marts

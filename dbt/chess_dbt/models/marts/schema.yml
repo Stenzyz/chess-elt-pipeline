@@ -1,0 +1,51 @@
+version: 2
+
+models:
+  - name: mart_player_rating_monthly
+    description: "Месячная динамика рейтинга. Одна строка = игрок + месяц + класс контроля."
+    columns:
+      - name: username
+        data_tests:
+          - not_null
+      - name: time_class
+        data_tests:
+          - not_null
+          - accepted_values:
+              values: ['rapid', 'blitz', 'bullet']
+      - name: month
+        data_tests:
+          - not_null
+
+  - name: mart_opening_popularity
+    description: "Популярность дебютов по месяцам, с долей от всех партий месяца и процентом побед белыми."
+    columns:
+      - name: month
+        data_tests:
+          - not_null
+      - name: eco
+        data_tests:
+          - not_null
+
+  - name: mart_white_advantage
+    description: "Доля побед белых, чёрных и ничьих по классу контроля и месяцам."
+    columns:
+      - name: time_class
+        data_tests:
+          - not_null
+          - accepted_values:
+              values: ['rapid', 'blitz', 'bullet']
+      - name: month
+        data_tests:
+          - not_null
+
+  - name: mart_terminations
+    description: "Причины окончания партий по классу контроля, с долей внутри каждого time_class."
+    columns:
+      - name: time_class
+        data_tests:
+          - not_null
+          - accepted_values:
+              values: ['rapid', 'blitz', 'bullet']
+      - name: termination
+        data_tests:
+          - not_null

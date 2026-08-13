@@ -37,5 +37,17 @@ with DAG(
             f"--profiles-dir {DBT_PROFILES_DIR}"
         ),
     )
+    task_dbt_build_marts = BashOperator(
+        task_id="dbt_build_marts",
+        bash_command=(
+            f"dbt build --select marts --project-dir {DBT_PROJECT_DIR} "
+            f"--profiles-dir {DBT_PROFILES_DIR}"
+        ),
+    )
 
-    task_dbt_build_staging >> task_dbt_snapshot >> task_dbt_build_dds
+    (
+        task_dbt_build_staging
+        >> task_dbt_snapshot
+        >> task_dbt_build_dds
+        >> task_dbt_build_marts
+    )
