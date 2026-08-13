@@ -16,6 +16,7 @@ db-migrate:
 	fi
 		@for file in $$(ls $(SQL_DIR)/*.sql | sort); do \
 		echo "Now running $$file script..."; \
-		docker compose exec -T postgres psql -U ${POSTGRES_USER} -d ${POSTGRES_DB} < "$$file" || exit 1; \
+		docker compose exec -T postgres psql -U ${POSTGRES_USER} -d ${POSTGRES_DB} \
+		-v pg_admin=${POSTGRES_USER} < "$$file" || exit 1; \
 	done
 	@echo "All scripts from $(SQL_DIR) folder is OK!"
