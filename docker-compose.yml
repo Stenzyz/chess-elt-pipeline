@@ -278,7 +278,7 @@ services:
         echo
         superset set-database-uri --database_name ${POSTGRES_DB} \
          --uri "postgresql://${SUPERSET_RO_USER}:${SUPERSET_RO_PASSWORD}\
-         @postgres:5432/${POSTGRES_DB}"
+        @postgres:5432/${POSTGRES_DB}"
 
 
   superset-postgres:
