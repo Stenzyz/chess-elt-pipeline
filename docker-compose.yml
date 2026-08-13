@@ -261,6 +261,8 @@ services:
     depends_on:
       superset-postgres:
         condition: service_healthy
+      postgres:
+        condition: service_healthy
     entrypoint: /bin/bash
     command:
       - -c
@@ -273,6 +275,11 @@ services:
           --email Stenzy@example.com \
           --password ${SUPERSET_ADMIN_PASSWORD:-admin}
         superset init
+        echo
+        superset set-database-uri --database_name ${POSTGRES_DB} \
+         --uri "postgresql://${SUPERSET_RO_USER}:${SUPERSET_RO_PASSWORD}\
+         @postgres:5432/${POSTGRES_DB}"
+
 
   superset-postgres:
     image: postgres:16
