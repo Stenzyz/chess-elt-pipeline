@@ -11,7 +11,7 @@ WITH all_players AS (
 SELECT
     all_players.username,
     profiles.title,
-    profiles.location,
+    profiles.country,
     profiles.status
 FROM all_players
 LEFT JOIN {{ ref('snap_player_profiles') }} AS profiles

@@ -12,12 +12,12 @@ models:
           - not_null
           - accepted_values:
               values: ['rapid', 'blitz', 'bullet']
-      - name: month
+      - name: snapshot_date
         data_tests:
           - not_null
 
   - name: mart_opening_popularity
-    description: "Популярность дебютов по месяцам, с долей от всех партий месяца и процентом побед белыми."
+    description: "Популярность дебютов по месяцам"
     columns:
       - name: month
         data_tests:
@@ -27,7 +27,7 @@ models:
           - not_null
 
   - name: mart_white_advantage
-    description: "Доля побед белых, чёрных и ничьих по классу контроля и месяцам."
+    description: "Число партий по исходу (белые/чёрные/ничья), классу контроля и месяцам."
     columns:
       - name: time_class
         data_tests:
@@ -37,9 +37,17 @@ models:
       - name: month
         data_tests:
           - not_null
+      - name: outcome
+        data_tests:
+          - not_null
+          - accepted_values:
+              values: ['white', 'black', 'draw']
+      - name: games_count
+        data_tests:
+          - not_null
 
   - name: mart_terminations
-    description: "Причины окончания партий по классу контроля, с долей внутри каждого time_class."
+    description: "Причины окончания партий по классу контроля"
     columns:
       - name: time_class
         data_tests:

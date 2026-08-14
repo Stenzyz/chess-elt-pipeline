@@ -5,7 +5,7 @@
         target_schema='dds',
         unique_key='username',
         strategy='check',
-        check_cols=['title', 'location', 'status'],
+        check_cols=['title', 'country', 'status'],
     )
 }}
 
