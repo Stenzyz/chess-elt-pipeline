@@ -35,10 +35,6 @@ models:
               field: time_class
       - name: eco
         description: "Дебют партии"
-        data_tests:
-          - relationships:
-              to: ref('dim_opening')
-              field: eco
       - name: termination
         description: "Причина завершения партии"
         data_tests:

@@ -25,10 +25,7 @@ SELECT DISTINCT ON (game ->> 'uuid')
     (game -> 'accuracies' ->> 'white')::real AS white_accuracies,
     (game -> 'accuracies' ->> 'black')::real AS black_accuracies,
     trim(
-        regexp_replace(
-            replace(split_part(split_part((game ->> 'eco'), '/openings/', 2), '...', 1), '-', ' '),
-        '\s*\d.*$', ''
-        )
+        replace(split_part(split_part((game ->> 'eco'), '/openings/', 2), '...', 1), '-', ' ')
     ) AS eco,
     to_timestamp((game ->> 'end_time')::bigint) AS end_time
 FROM {{ source('raw', 'games_raw') }},
