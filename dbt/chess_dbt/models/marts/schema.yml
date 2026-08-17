@@ -2,7 +2,7 @@ version: 2
 
 models:
   - name: mart_player_rating_daily
-    description: "Дневная динамика рейтинга. Одна строка = игрок + месяц + класс контроля."
+    description: "Дневная динамика рейтинга. Одна строка = игрок + дата снимка + класс контроля."
     columns:
       - name: username
         data_tests:
