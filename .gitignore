@@ -222,3 +222,6 @@ __marimo__/
 
 .env
 *.parquet
+
+# dbt
+dbt/chess_dbt/.user.yml
